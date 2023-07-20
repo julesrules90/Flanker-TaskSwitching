@@ -30,12 +30,10 @@ def histogram(df, directory, unique_id, skip_columns=[]):
             plt.close(fig)
 
 if __name__ == "__main__":
-    dataframes = main()  # Call the main function from datacleaning.py and get the return data
-    for i, df in enumerate(dataframes):  # Iterate through each DataFrame in the returned list
+    dataframes = main()  # Calls the main function from datacleaning.py and gets the return data
+    for i, df in enumerate(dataframes):
 
-        # Assuming 'Participant ID' is a column in your df, convert it to an integer before using it in the filename
         unique_id = int(df.loc[0, 'Participant ID'])
-
         with pd.ExcelWriter(directory + f'combined_{unique_id}.xlsx', engine='xlsxwriter') as writer:
 
             save_to_excel(writer, df, 'Data')
