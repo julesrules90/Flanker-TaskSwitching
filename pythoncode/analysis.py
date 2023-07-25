@@ -140,3 +140,25 @@ def plot_correlations_from_excel(directory):
     fig.tight_layout()
     plt.savefig(f'{directory}/correlations.png')
     plt.close(fig)
+<<<<<<< HEAD:analysis.py
+=======
+
+def plot_accuracy_correlation_from_excel(directory):
+    # Load data from Excel
+    averages_df = pd.read_excel(directory + 'Combined_Sample.xlsx', sheet_name='Averages')
+
+    # Create figure and axis
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    # Scatter plot
+    ax.scatter(averages_df['acc_Flanker'], averages_df['acc_Task_Switching'])
+
+    # Add labels and title
+    ax.set_xlabel('Average Accuracy on Flanker')
+    ax.set_ylabel('Average Accuracy on Task-Switching')
+    ax.set_title('Correlation of Accuracy on Flanker vs Accuracy on Task-Switching')
+
+    # Save and close the figure
+    plt.savefig(f'{directory}/accuracy_correlation.png')
+    plt.close(fig)
+>>>>>>> be6bfbcae592bdd84f23569eaf02e35d7f5cd538:pythoncode/analysis.py
