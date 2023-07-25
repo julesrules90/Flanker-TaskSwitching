@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+import numpy as np
 import seaborn as sns
 from config import directory
 from datacleaning import save_to_excel
@@ -46,48 +47,37 @@ def plot_average_histograms(combined_df):
     combined_df['Participant ID'] = combined_df['Participant ID'].fillna(method='ffill')
     avg_rt_and_acc = combined_df.groupby('Participant ID')[['rt_Flanker', 'rt_Task_Switching', 'acc_Flanker', 'acc_Task_Switching']].mean()
 
-    # create histogram for average RT (Flanker task)
-    fig, ax = plt.subplots(figsize=(10, 6))
-    for participant in avg_rt_and_acc.index:
-        ax.hist(avg_rt_and_acc.loc[participant, 'rt_Flanker'], bins=30, alpha=0.5, label=f'Participant {participant}')
-    ax.set_xlabel('Average RT per Subject (Flanker)')
-    ax.set_ylabel('Frequency')
-    ax.set_title('Histogram of average RT per subject for Flanker Task')
-    ax.legend(loc='upper right')
-    plt.savefig(f'{directory}/average_rt_per_subject_histogram_flanker.png')
-    plt.close(fig)
+    # Create weights for all the histograms
+    weights_rt_Flanker = np.ones_like(avg_rt_and_acc['rt_Flanker']) / len(avg_rt_and_acc['rt_Flanker'])
+    weights_rt_Task_Switching = np.ones_like(avg_rt_and_acc['rt_Task_Switching']) / len(avg_rt_and_acc['rt_Task_Switching'])
+    weights_acc_Flanker = np.ones_like(avg_rt_and_acc['acc_Flanker']) / len(avg_rt_and_acc['acc_Flanker'])
+    weights_acc_Task_Switching = np.ones_like(avg_rt_and_acc['acc_Task_Switching']) / len(avg_rt_and_acc['acc_Task_Switching'])
 
-    # create histogram for average RT (Task Switching task)
-    fig, ax = plt.subplots(figsize=(10, 6))
-    for participant in avg_rt_and_acc.index:
-        ax.hist(avg_rt_and_acc.loc[participant, 'rt_Task_Switching'], bins=30, alpha=0.5, label=f'Participant {participant}')
-    ax.set_xlabel('Average RT per Subject (Task Switching)')
-    ax.set_ylabel('Frequency')
-    ax.set_title('Histogram of average RT per subject for Task Switching Task')
-    ax.legend(loc='upper right')
-    plt.savefig(f'{directory}/average_rt_per_subject_histogram_task_switching.png')
-    plt.close(fig)
+    # Create the histograms
+    fig, axs = plt.subplots(2, 2, figsize=(12, 10))
 
-    # create histogram for average Accuracy (Flanker task)
-    fig, ax = plt.subplots(figsize=(10, 6))
-    for participant in avg_rt_and_acc.index:
-        ax.hist(avg_rt_and_acc.loc[participant, 'acc_Flanker'], bins=30, alpha=0.5, label=f'Participant {participant}')
-    ax.set_xlabel('Average Accuracy per Subject (Flanker)')
-    ax.set_ylabel('Frequency')
-    ax.set_title('Histogram of average Accuracy per subject for Flanker Task')
-    ax.legend(loc='upper right')
-    plt.savefig(f'{directory}/average_acc_per_subject_histogram_flanker.png')
-    plt.close(fig)
+    axs[0, 0].hist(avg_rt_and_acc['rt_Flanker'], bins=8, alpha=0.5, edgecolor='black', weights=weights_rt_Flanker)
+    axs[0, 0].set_xlabel('Average RT (Flanker)')
+    axs[0, 0].set_ylabel('Percent')
+    axs[0, 0].set_title('Average RT per subject for Flanker Task')
 
-    # create histogram for average Accuracy (Task Switching task)
-    fig, ax = plt.subplots(figsize=(10, 6))
-    for participant in avg_rt_and_acc.index:
-        ax.hist(avg_rt_and_acc.loc[participant, 'acc_Task_Switching'], bins=30, alpha=0.5, label=f'Participant {participant}')
-    ax.set_xlabel('Average Accuracy per Subject (Task Switching)')
-    ax.set_ylabel('Frequency')
-    ax.set_title('Histogram of average Accuracy per subject for Task Switching Task')
-    ax.legend(loc='upper right')
-    plt.savefig(f'{directory}/average_acc_per_subject_histogram_task_switching.png')
+    axs[0, 1].hist(avg_rt_and_acc['rt_Task_Switching'], bins=8, alpha=0.5, edgecolor='black', weights=weights_rt_Task_Switching)
+    axs[0, 1].set_xlabel('Average RT (Task Switching)')
+    axs[0, 1].set_ylabel('Percent')
+    axs[0, 1].set_title('Average RT per subject for Task Switching Task')
+
+    axs[1, 0].hist(avg_rt_and_acc['acc_Flanker'], bins=8, alpha=0.5, edgecolor='black', weights=weights_acc_Flanker)
+    axs[1, 0].set_xlabel('Average Accuracy (Flanker)')
+    axs[1, 0].set_ylabel('Percent')
+    axs[1, 0].set_title('Average Accuracy per subject for Flanker Task')
+
+    axs[1, 1].hist(avg_rt_and_acc['acc_Task_Switching'], bins=8, alpha=0.5, edgecolor='black', weights=weights_acc_Task_Switching)
+    axs[1, 1].set_xlabel('Average Accuracy (Task Switching)')
+    axs[1, 1].set_ylabel('Percent')
+    axs[1, 1].set_title('Average Accuracy per subject for Task Switching Task')
+
+    fig.tight_layout()
+    plt.savefig(f"{directory}/average_rt_acc_histograms.png")
     plt.close(fig)
 
 def combined_statistics_and_histogram(df):
@@ -127,40 +117,26 @@ def plot_avg_rt_by_accuracy(df):
     plt.savefig(f'{directory}/average_rt_per_accuracy.png')
     plt.close(fig)
 
-def plot_rt_correlation_from_excel(directory):
+def plot_correlations_from_excel(directory):
     # Load data from Excel
     averages_df = pd.read_excel(directory + 'Combined_Sample.xlsx', sheet_name='Averages')
 
-    # Create figure and axis
-    fig, ax = plt.subplots(figsize=(8, 6))
+    # Create 2x1 subplots
+    fig, axs = plt.subplots(1, 2, figsize=(18, 8))
 
-    # Scatter plot
-    ax.scatter(averages_df['rt_Flanker'], averages_df['rt_Task_Switching'])
+    # RT correlation plot
+    axs[0].scatter(averages_df['rt_Flanker'], averages_df['rt_Task_Switching'])
+    axs[0].set_xlabel('Average RT on Flanker')
+    axs[0].set_ylabel('Average RT on Task-Switching')
+    axs[0].set_title('Correlation of RT on Flanker vs RT on Task-Switching')
 
-    # Add labels and title
-    ax.set_xlabel('Average RT on Flanker')
-    ax.set_ylabel('Average RT on Task-Switching')
-    ax.set_title('Correlation of RT on Flanker vs RT on Task-Switching')
+    # Accuracy correlation plot
+    axs[1].scatter(averages_df['acc_Flanker'], averages_df['acc_Task_Switching'])
+    axs[1].set_xlabel('Average Accuracy on Flanker')
+    axs[1].set_ylabel('Average Accuracy on Task-Switching')
+    axs[1].set_title('Correlation of Accuracy on Flanker vs Accuracy on Task-Switching')
 
-    # Save and close the figure
-    plt.savefig(f'{directory}/rt_correlation.png')
-    plt.close(fig)
-
-def plot_accuracy_correlation_from_excel(directory):
-    # Load data from Excel
-    averages_df = pd.read_excel(directory + 'Combined_Sample.xlsx', sheet_name='Averages')
-
-    # Create figure and axis
-    fig, ax = plt.subplots(figsize=(8, 6))
-
-    # Scatter plot
-    ax.scatter(averages_df['acc_Flanker'], averages_df['acc_Task_Switching'])
-
-    # Add labels and title
-    ax.set_xlabel('Average Accuracy on Flanker')
-    ax.set_ylabel('Average Accuracy on Task-Switching')
-    ax.set_title('Correlation of Accuracy on Flanker vs Accuracy on Task-Switching')
-
-    # Save and close the figure
-    plt.savefig(f'{directory}/accuracy_correlation.png')
+    # Adjust layout and save the figure
+    fig.tight_layout()
+    plt.savefig(f'{directory}/correlations.png')
     plt.close(fig)

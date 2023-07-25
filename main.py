@@ -31,6 +31,5 @@ if __name__ == '__main__':
 
     plot_avg_rt_by_accuracy(combined_df)
 
-    plot_rt_correlation_from_excel(directory)
-    plot_accuracy_correlation_from_excel(directory)
+    plot_correlations_from_excel(directory)
     print('Finished Scatterplots')
