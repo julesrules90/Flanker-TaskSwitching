@@ -216,10 +216,10 @@ def plot_avg_accuracy_by_difficulty_and_reward(df):
 
 
 def mult_regression(df):
-    mod_Flanker = smf.ols("rt_Flanker ~ Q('Proportion Congruent') + reward_Flanker", data=df)
+    mod_Flanker = smf.ols("rt_Flanker ~ Q('Proportion Congruent') * reward_Flanker", data=df)
     res_Flanker = mod_Flanker.fit()
 
-    mod_Task_Switching = smf.ols("rt_Task_Switching ~ Q('Switch Rate') + reward_Task_Switching", data=df)
+    mod_Task_Switching = smf.ols("rt_Task_Switching ~ Q('Switch Rate') * reward_Task_Switching", data=df)
     res_Task_Switching = mod_Task_Switching.fit()
 
     # Get the summary text from the regression result
