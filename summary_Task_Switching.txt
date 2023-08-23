@@ -1,0 +1,27 @@
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:      rt_Task_Switching   R-squared:                       0.118
+Model:                            OLS   Adj. R-squared:                  0.118
+Method:                 Least Squares   F-statistic:                     213.6
+Date:                Tue, 22 Aug 2023   Prob (F-statistic):          4.97e-130
+Time:                        22:54:23   Log-Likelihood:                -1321.1
+No. Observations:                4789   AIC:                             2650.
+Df Residuals:                    4785   BIC:                             2676.
+Df Model:                           3                                         
+Covariance Type:            nonrobust                                         
+==========================================================================================================
+                                             coef    std err          t      P>|t|      [0.025      0.975]
+----------------------------------------------------------------------------------------------------------
+Intercept                                  0.6390      0.012     54.839      0.000       0.616       0.662
+Q('Switch Rate')                           0.2831      0.018     15.561      0.000       0.247       0.319
+reward_Task_Switching                     -0.0025      0.002     -1.543      0.123      -0.006       0.001
+Q('Switch Rate'):reward_Task_Switching     0.0014      0.003      0.550      0.582      -0.004       0.006
+==============================================================================
+Omnibus:                     1303.226   Durbin-Watson:                   1.376
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):             3398.545
+Skew:                           1.465   Prob(JB):                         0.00
+Kurtosis:                       5.905   Cond. No.                         36.5
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.

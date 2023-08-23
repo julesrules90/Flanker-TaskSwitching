@@ -1,0 +1,27 @@
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:             rt_Flanker   R-squared:                       0.040
+Model:                            OLS   Adj. R-squared:                  0.040
+Method:                 Least Squares   F-statistic:                     66.83
+Date:                Tue, 22 Aug 2023   Prob (F-statistic):           2.48e-42
+Time:                        22:54:23   Log-Likelihood:                 3667.2
+No. Observations:                4800   AIC:                            -7326.
+Df Residuals:                    4796   BIC:                            -7300.
+Df Model:                           3                                         
+Covariance Type:            nonrobust                                         
+============================================================================================================
+                                               coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------------------------------------
+Intercept                                    0.5206      0.004    126.536      0.000       0.513       0.529
+Q('Proportion Congruent')                   -0.0576      0.006     -8.958      0.000      -0.070      -0.045
+reward_Flanker                               0.0001      0.001      0.225      0.822      -0.001       0.001
+Q('Proportion Congruent'):reward_Flanker -6.992e-06      0.001     -0.008      0.994      -0.002       0.002
+==============================================================================
+Omnibus:                     2879.686   Durbin-Watson:                   1.383
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):            37792.049
+Skew:                           2.646   Prob(JB):                         0.00
+Kurtosis:                      15.687   Cond. No.                         36.5
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
