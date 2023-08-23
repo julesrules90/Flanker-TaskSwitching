@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 import seaborn as sns
+import statsmodels.formula.api as smf
 from config import directory
 from datacleaning import save_to_excel
 
@@ -81,7 +82,7 @@ def plot_average_histograms(combined_df):
     plt.close(fig)
 
 def combined_statistics_and_histogram(df):
-    skip_columns = ['Participant ID', 'Age', 'Sex', 'Flanker Trial', 'reward_Flanker', 'Task Switching Trial', 'reward_Task_Switching']
+    skip_columns = ['Participant ID', 'Age', 'Sex', 'Flanker Trial', 'reward_Flanker', 'Task Switching Trial', 'reward_Task_Switching', 'Proportion Congruent', 'Switch Rate']
     stats = descriptive_statistics(df, skip_columns)
 
     stats_df = pd.DataFrame(stats)
@@ -140,3 +141,96 @@ def plot_correlations_from_excel(directory):
     fig.tight_layout()
     plt.savefig(f'{directory}/correlations.png')
     plt.close(fig)
+
+def plot_avg_rt_by_difficulty_and_reward(df):
+    # Filter df to only include correct trials for each task
+    flanker_df = df[df['acc_Flanker'] == 1]
+    task_switch_df = df[df['acc_Task_Switching'] == 1]
+
+    # Group data by difficulty and reward condition
+    flanker_df = flanker_df.groupby(['Proportion Congruent', 'reward_Flanker'])['rt_Flanker'].mean().reset_index()
+    task_switch_df = task_switch_df.groupby(['Switch Rate', 'reward_Task_Switching'])['rt_Task_Switching'].mean().reset_index()
+
+    # plot the two tasks
+    fig, axs = plt.subplots(2, 1, figsize=(10, 10))
+
+    # plot for Flanker Task
+    barplot1 = sns.barplot(x='Proportion Congruent', y='rt_Flanker', hue='reward_Flanker', data=flanker_df, ax=axs[0])
+    axs[0].set_title('Average RT by Difficulty and Reward (Flanker Task) for Accurate Trials Only')
+    axs[0].set_xlabel('Difficulty Level (Proportion Congruent)')
+    axs[0].set_ylabel('Average RT')
+    
+    # Add labels on top of bars
+    for p in barplot1.patches:
+        barplot1.text(p.get_x() + p.get_width() / 2., p.get_height(), '{0:.2f}'.format(p.get_height()), 
+                fontsize=12, ha='center', va='bottom')
+        
+    # plot for Task Switching Task
+    barplot2 = sns.barplot(x='Switch Rate', y='rt_Task_Switching', hue='reward_Task_Switching', data=task_switch_df, ax=axs[1])
+    axs[1].set_title('Average RT by Difficulty and Reward (Task Switching Task) for Accurate Trials Only')
+    axs[1].set_xlabel('Difficulty Level (Switch Rate)')
+    axs[1].set_ylabel('Average RT')
+    
+    # Add labels on top of bars
+    for p in barplot2.patches:
+        barplot2.text(p.get_x() + p.get_width() / 2., p.get_height(), '{0:.2f}'.format(p.get_height()), 
+                fontsize=12, ha='center', va='bottom')
+    
+    plt.tight_layout()
+    plt.savefig(f'{directory}/average_rt_by_difficulty_and_reward.png')
+    plt.close(fig)
+
+def plot_avg_accuracy_by_difficulty_and_reward(df):
+    # group data by difficulty and reward condition
+    flanker_df = df.groupby(['Proportion Congruent', 'reward_Flanker'])['acc_Flanker'].mean().reset_index()
+    task_switch_df = df.groupby(['Switch Rate', 'reward_Task_Switching'])['acc_Task_Switching'].mean().reset_index()
+
+    # plot the two tasks
+    fig, axs = plt.subplots(2, 1, figsize=(10, 10))
+
+    # plot for Flanker Task
+    barplot1 = sns.barplot(x='Proportion Congruent', y='acc_Flanker', hue='reward_Flanker', data=flanker_df, ax=axs[0])
+    axs[0].set_title('Average Accuracy by Difficulty and Reward (Flanker Task)')
+    axs[0].set_xlabel('Difficulty Level (Proportion Congruent)')
+    axs[0].set_ylabel('Average Accuracy')
+
+    # Add labels on top of bars
+    for p in barplot1.patches:
+        barplot1.text(p.get_x() + p.get_width() / 2., p.get_height(), '{0:.2f}'.format(p.get_height()), 
+                fontsize=12, ha='center', va='bottom')
+    
+    # plot for Task Switching Task
+    barplot2 = sns.barplot(x='Switch Rate', y='acc_Task_Switching', hue='reward_Task_Switching', data=task_switch_df, ax=axs[1])
+    axs[1].set_title('Average Accuracy by Difficulty and Reward (Task Switching Task)')
+    axs[1].set_xlabel('Difficulty Level (Switch Rate)')
+    axs[1].set_ylabel('Average Accuracy')
+
+    # Add labels on top of bars
+    for p in barplot2.patches:
+        barplot2.text(p.get_x() + p.get_width() / 2., p.get_height(), '{0:.2f}'.format(p.get_height()), 
+                fontsize=12, ha='center', va='bottom')
+    
+    plt.tight_layout()
+    plt.savefig(f'{directory}/average_accuracy_by_difficulty_and_reward.png')
+    plt.close(fig)
+
+
+def mult_regression(df):
+    mod_Flanker = smf.ols("rt_Flanker ~ Q('Proportion Congruent') + reward_Flanker", data=df)
+    res_Flanker = mod_Flanker.fit()
+
+    mod_Task_Switching = smf.ols("rt_Task_Switching ~ Q('Switch Rate') + reward_Task_Switching", data=df)
+    res_Task_Switching = mod_Task_Switching.fit()
+
+    # Get the summary text from the regression result
+    summary_text_Flanker = res_Flanker.summary().as_text()
+    summary_text_Task_Switching = res_Task_Switching.summary().as_text()
+
+# Write the summaries to individual text files
+    with open(f'{directory}/summary_Flanker.txt', 'w') as file:
+        file.write(summary_text_Flanker)
+        
+    with open(f'{directory}/summary_Task_Switching.txt', 'w') as file:
+        file.write(summary_text_Task_Switching)
+
+    print(f"Summaries saved to '{directory}summary_Flanker.txt' and '{directory}summary_Task_Switching.txt'")

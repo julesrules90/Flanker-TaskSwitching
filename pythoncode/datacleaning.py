@@ -37,6 +37,12 @@ def read_and_prepare_new_df(file_path, columns, task_name, unique_id):
     # Adds task trial number in new dataframe
     df.insert(0, f'{task_name} Trial', range(1, df['acc'].count() + 1))
 
+    # Rename prop_cong/switch_rate to difficulty_Flanker/difficulty_Task_Switching
+    if task_name == 'Flanker':
+        df = df.rename(columns={'prop_cong': 'Proportion Congruent'})
+    elif task_name == 'Task Switching':
+        df = df.rename(columns={'switch_rate': 'Switch Rate'})
+
     return df
 
 def save_to_excel(writer, df, sheet_name):

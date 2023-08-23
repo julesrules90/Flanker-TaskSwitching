@@ -7,7 +7,7 @@ from analysis import *
 if __name__ == '__main__':
     dataframes, combined_df = main()
 
-    skip_columns = ['Participant ID', 'Age', 'Sex', 'Flanker Trial', 'reward_Flanker', 'Task Switching Trial', 'reward_Task_Switching']
+    skip_columns = ['Participant ID', 'Age', 'Sex', 'Flanker Trial', 'reward_Flanker', 'Task Switching Trial', 'reward_Task_Switching', 'Proportion Congruent', 'Switch Rate']
 
     for i, df in enumerate(dataframes):
         unique_id = int(df.loc[0, 'Participant ID'])
@@ -33,3 +33,8 @@ if __name__ == '__main__':
 
     plot_correlations_from_excel(directory)
     print('Finished Scatterplots')
+
+    plot_avg_rt_by_difficulty_and_reward(combined_df)
+    plot_avg_accuracy_by_difficulty_and_reward(combined_df)
+
+    mult_regression(combined_df)
