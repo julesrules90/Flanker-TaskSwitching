@@ -225,10 +225,6 @@ def mult_regression(df):
     summary_text_Flanker = res_Flanker.summary().as_text()
     summary_text_Task_Switching = res_Task_Switching.summary().as_text()
 
-    # Check if directory exists, if not, create it
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
     # Write the summaries to individual text files
     with open(f'{directory}/summary_Flanker.txt', 'w') as file:
         file.write(summary_text_Flanker)
