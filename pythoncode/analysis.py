@@ -30,9 +30,6 @@ def calculate_average_per_participant(df):
 def histogram(df, unique_id, skip_columns=[]):
     individual_histograms_dir = os.path.join(directory, 'Individual_Histograms')
 
-    if not os.path.exists(individual_histograms_dir):
-        os.makedirs(individual_histograms_dir)
-
     for column in df.columns:
         if column not in skip_columns:
             fig, ax = plt.subplots()
