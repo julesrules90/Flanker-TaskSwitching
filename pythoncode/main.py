@@ -37,4 +37,5 @@ if __name__ == '__main__':
     plot_avg_rt_by_difficulty_and_reward(combined_df)
     plot_avg_accuracy_by_difficulty_and_reward(combined_df)
 
-    mult_regression(combined_df)
+    grouped_df, grouped_df_task_switching = mult_regression(combined_df)
+    create_bargraphs(grouped_df, grouped_df_task_switching)

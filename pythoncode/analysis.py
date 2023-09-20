@@ -41,9 +41,9 @@ def histogram(df, unique_id, skip_columns=[]):
             fig.savefig(f'{individual_histograms_dir}/histogram_{unique_id}_{column}.png')
             plt.close(fig)
 
-def plot_average_histograms(combined_df):
-    combined_df['Participant ID'] = combined_df['Participant ID'].fillna(method='ffill')
-    avg_rt_and_acc = combined_df.groupby('Participant ID')[['rt_Flanker', 'rt_Task_Switching', 'acc_Flanker', 'acc_Task_Switching']].mean()
+def plot_average_histograms(df):
+    df['Participant ID'] = df['Participant ID'].fillna(method='ffill')
+    avg_rt_and_acc = df.groupby('Participant ID')[['rt_Flanker', 'rt_Task_Switching', 'acc_Flanker', 'acc_Task_Switching']].mean()
 
     # Create weights for all the histograms
     weights_rt_Flanker = np.ones_like(avg_rt_and_acc['rt_Flanker']) / len(avg_rt_and_acc['rt_Flanker'])
@@ -212,10 +212,26 @@ def plot_avg_accuracy_by_difficulty_and_reward(df):
     plt.close(fig)
 
 def mult_regression(df):
-    mod_Flanker = smf.ols("rt_Flanker ~ Q('Proportion Congruent') * reward_Flanker", data=df)
+    
+    # Change categorical variables to 0 and 1
+    df['updated_Proportion_Congruent'] = np.where(df['Proportion Congruent'] == 0.1, 0, np.where(df['Proportion Congruent'] == 0.9, 1, df['Proportion Congruent']))
+    df['updated_Switch_Rate'] = np.where(df['Switch Rate'] == 0.1, 0, np.where(df['Switch Rate'] == 0.9, 1, df['Switch Rate']))
+        
+    df['updated_Reward_Flanker'] = np.where(df['reward_Flanker'] == 1, 0, np.where(df['reward_Flanker'] == 10, 1, df['reward_Flanker']))
+    df['updated_Reward_Task_Switching'] = np.where(df['reward_Task_Switching'] == 1, 0, np.where(df['reward_Task_Switching'] == 10, 1, df['reward_Task_Switching']))
+
+    grouped_df = df.groupby(['Participant ID', 'updated_Proportion_Congruent', 'updated_Reward_Flanker'])['rt_Flanker'].mean().reset_index()
+    grouped_df_task_switching = df.groupby(['Participant ID', 'updated_Switch_Rate', 'updated_Reward_Task_Switching'])['rt_Task_Switching'].mean().reset_index()
+
+    # Print 
+    grouped_df.to_excel(f'{directory}grouped_flanker_data.xlsx', index=False)
+    grouped_df_task_switching.to_excel(f'{directory}grouped_task_switching_data.xlsx', index=False)
+
+    # Get Regression
+    mod_Flanker = smf.ols("rt_Flanker ~ (updated_Proportion_Congruent) * (updated_Reward_Flanker)", data=grouped_df)
     res_Flanker = mod_Flanker.fit()
 
-    mod_Task_Switching = smf.ols("rt_Task_Switching ~ Q('Switch Rate') * reward_Task_Switching", data=df)
+    mod_Task_Switching = smf.ols("rt_Task_Switching ~ (updated_Switch_Rate) * (updated_Reward_Task_Switching)", data=grouped_df_task_switching)
     res_Task_Switching = mod_Task_Switching.fit()
 
     # Get the summary text from the regression result
@@ -230,3 +246,33 @@ def mult_regression(df):
         file.write(summary_text_Task_Switching)
 
     print(f"Summaries saved to '{directory}/summary_Flanker.txt' and '{directory}/summary_Task_Switching.txt'")
+
+    return grouped_df, grouped_df_task_switching
+
+
+def create_bargraphs(grouped_df, grouped_df_task_switching):
+
+    # Calculate the mean for each condition combination
+    mean_grouped_df = grouped_df.groupby(['updated_Proportion_Congruent', 'updated_Reward_Flanker'])['rt_Flanker'].mean().reset_index()
+    mean_grouped_df_task_switching = grouped_df_task_switching.groupby(['updated_Switch_Rate', 'updated_Reward_Task_Switching'])['rt_Task_Switching'].mean().reset_index()
+
+     # Create a 2-panel figure: 2 rows, 1 column
+    plt.figure(figsize=(8, 12))
+
+    # Flanker bar plot
+    plt.subplot(2, 1, 1)
+    sns.barplot(x='updated_Proportion_Congruent', y='rt_Flanker', hue='updated_Reward_Flanker', data=mean_grouped_df, errorbar=('ci',95))
+    plt.xlabel('Updated Proportion Congruent')
+    plt.ylabel('Mean RT Flanker')
+    plt.title('Flanker')
+
+    # Task Switching bar plot
+    plt.subplot(2, 1, 2)
+    sns.barplot(x='updated_Switch_Rate', y='rt_Task_Switching', hue='updated_Reward_Task_Switching', data=mean_grouped_df_task_switching, errorbar=('ci',95))
+    plt.xlabel('Updated Switch Rate')
+    plt.ylabel('Mean RT Task Switching')
+    plt.title('Task Switching')
+
+    # Save the entire figure containing both plots
+    plt.savefig(f'{directory}/Combined_Regression.png')
+
